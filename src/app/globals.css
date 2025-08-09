@@ -16,31 +16,34 @@
   }
 }
 
-body {
+/* --- PERUBAHAN DI SINI --- */
+/* Terapkan background ke html dan body */
+html, body {
   background: var(--background);
   color: var(--foreground);
 }
 
-/* Kode @layer components untuk tabel responsif */
+
 @layer components {
+  /* Style untuk membuat tabel responsif menjadi card di layar kecil */
   .responsive-table {
     @apply min-w-full bg-white;
   }
   @media (max-width: 640px) {
     .responsive-table thead {
-      @apply hidden; /* Sembunyikan header tabel di mobile */
+      @apply hidden;
     }
     .responsive-table tr {
-      @apply block mb-4 border rounded-lg shadow; /* Jadikan setiap baris sebagai kartu */
+      @apply block mb-4 border rounded-lg shadow;
     }
     .responsive-table td {
-      @apply flex justify-between items-center p-3 border-b; /* Atur sel sebagai baris flex */
+      @apply flex justify-between items-center p-3 border-b;
     }
     .responsive-table td:last-child {
       @apply border-b-0;
     }
     .responsive-table td::before {
-      content: attr(data-label); /* Tampilkan label data sebagai judul */
+      content: attr(data-label);
       @apply font-bold mr-4 text-sm text-gray-600;
     }
   }
