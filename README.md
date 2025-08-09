@@ -4,34 +4,70 @@ Aplikasi web minimalis untuk pencatatan transaksi bahan bakar Pertalite di SPBU.
 
 ---
 
-### Daftar Isi
-1.  [Setup Proyek & Pengembangan Lokal](#-1-setup-proyek--pengembangan-lokal)
-2.  [Deployment ke Vercel](#-2-deployment-ke-vercel)
-3.  [Manajemen & Pemeliharaan](#-3-manajemen--pemeliharaan)
-4.  [Panduan Pengujian Fungsionalitas](#-4-panduan-pengujian-fungsionalitas)
+## 🚀 Status Proyek: Versi 1.5 (Fitur Lanjutan)
+
+Aplikasi telah berkembang dari MVP menjadi produk yang lebih matang dengan penambahan fitur keamanan, analisis data, dan peningkatan signifikan pada pengalaman pengguna (UX).
+
+### ✨ Fitur yang Sudah Diimplementasikan
+
+#### Fitur Operator (Halaman Utama)
+-   **Pengecekan Plat Dahulu**: Alur kerja baru dimana plat nomor dicek terlebih dahulu sebelum menampilkan form input liter.
+-   **Validasi Format Plat Nomor**: Menerapkan Regex untuk memastikan format plat nomor sesuai standar (contoh: KT 1234 ABC).
+-   **Input Liter & Harga Otomatis**: Form untuk input jumlah liter dengan kalkulasi harga otomatis.
+-   **Pencegahan Input Duplikat**: Logika untuk menolak input jika plat nomor yang sama sudah tercatat pada hari yang sama (reset jam 00:00).
+-   **Peningkatan UX**:
+    -   Keyboard numerik otomatis muncul di perangkat mobile untuk input liter.
+    -   Fokus otomatis berpindah ke kolom liter setelah menekan "Enter" pada kolom plat.
+
+#### Fitur Admin/Manajer (Dilindungi Login)
+-   **Sistem Autentikasi**: Halaman `/login` khusus untuk admin/manajer menggunakan **Supabase Auth**.
+-   **Dashboard Analitik (`/dashboard`)**:
+    -   Menampilkan ringkasan data visual dengan filter "Hari Ini" dan "7 Hari Terakhir".
+    -   Kartu statistik untuk "Total Transaksi" dan "Total Liter Terjual".
+    -   Grafik batang interaktif untuk transaksi per jam (harian) atau per hari (mingguan).
+    -   Panel "Aktivitas Terkini" yang menampilkan 5 transaksi terakhir.
+-   **Halaman Riwayat Transaksi (`/riwayat`)**:
+    -   Menampilkan data transaksi dengan sistem **paginasi** (20 data per halaman).
+    -   Fungsi filter berdasarkan plat nomor dan tanggal.
+    -   Fungsi **sorting** data pada setiap kolom tabel (naik/turun).
+    -   Fitur **Ekspor ke CSV** untuk mengunduh data yang telah difilter.
+
+#### Peningkatan Antarmuka & Pengalaman Pengguna (Global)
+-   **Transisi Halaman Mulus**: Animasi geser yang halus antar halaman menggunakan `framer-motion` tanpa efek "kedip hitam".
+-   **Skeleton UI**: Tampilan *loading* yang profesional di halaman Dashboard dan Riwayat.
+-   **Desain Sepenuhnya Responsif**:
+    -   Tabel riwayat berubah menjadi tumpukan kartu di layar mobile.
+    -   Tombol paginasi menyesuaikan layout secara vertikal di layar mobile.
+
+---
+
+## 🛠️ Tumpukan Teknologi (Tech Stack)
+
+-   **Framework:** [Next.js](https://nextjs.org/) (React)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+-   **Database & Autentikasi:** [Supabase](https://supabase.com/) (PostgreSQL & Supabase Auth)
+-   **Grafik:** [Chart.js](https://www.chartjs.org/) dengan `react-chartjs-2`
+-   **Animasi:** [Framer Motion](https://www.framer.com/motion/)
+-   **Utilitas CSV:** [Papaparse](https://www.papaparse.com/)
+-   **Hosting:** [Vercel](https://vercel.com/)
 
 ---
 
 ## ⚙️ 1. Setup Proyek & Pengembangan Lokal
 
-Langkah-langkah untuk menjalankan aplikasi di komputer lokal.
-
 ### 1.1. Clone Repository
-Buka terminal dan jalankan perintah berikut:
 ```bash
 git clone [https://github.com/azrlb23/SPBUManagerial.git](https://github.com/azrlb23/SPBUManagerial.git)
 cd spbu-managerial
 ```
 
 ### 1.2. Install Dependencies
-Install semua paket yang dibutuhkan oleh proyek:
 ```bash
 npm install
 ```
 
 ### 1.3. Konfigurasi Database & Environment
-Aplikasi ini terhubung ke database Supabase.
-1.  **Buat Tabel di Supabase**: Buka Supabase, masuk ke **SQL Editor**, dan jalankan query berikut untuk membuat tabel yang dibutuhkan:
+1.  **Buat Tabel di Supabase**: Buka **SQL Editor** di Supabase, jalankan query berikut:
     ```sql
     CREATE TABLE transaksi_pertalite (
       id BIGSERIAL PRIMARY KEY,
@@ -41,25 +77,22 @@ Aplikasi ini terhubung ke database Supabase.
       waktu_pencatatan TIMESTAMPTZ DEFAULT now() NOT NULL
     );
     ```
-2.  **Setup Environment Variables**: Buat file bernama `.env.local` di direktori utama proyek. Isi file tersebut dengan kredensial Supabase Anda:
+2.  **Setup Autentikasi**: Di dasbor Supabase, pergi ke **Authentication > Providers** dan pastikan **Email** aktif. Kemudian di tab **Users**, klik **"Add user"** untuk membuat akun admin/manajer.
+3.  **Setup Environment Variables**: Buat file `.env.local` dan isi dengan kredensial Supabase Anda:
     ```
-    NEXT_PUBLIC_SUPABASE_URL=URL_PROYEK_ANDA_DARI_SUPABASE
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=KUNCI_ANON_PUBLIC_ANDA_DARI_SUPABASE
+    NEXT_PUBLIC_SUPABASE_URL=URL_PROYEK_ANDA
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=KUNCI_ANON_PUBLIC_ANDA
     ```
-    Anda bisa menemukan URL dan Kunci di dasbor Supabase pada bagian **Project Settings > API**.
 
 ### 1.4. Jalankan Aplikasi Lokal
-Setelah semua setup selesai, jalankan server pengembangan:
 ```bash
 npm run dev
 ```
-Buka **http://localhost:3000** di browser Anda untuk melihat aplikasi.
+Buka **http://localhost:3000** di browser Anda.
 
 ---
 
 ## 🚀 2. Deployment ke Vercel
-
-Langkah-langkah untuk mempublikasikan aplikasi agar bisa diakses secara online.
 
 ### 2.1. Simpan Kode ke GitHub
 Pastikan semua perubahan terbaru sudah diunggah ke GitHub:
@@ -76,73 +109,57 @@ git push origin main
 
 ### 2.3. Konfigurasi & Deploy
 1.  **Framework Preset**: Vercel akan otomatis mendeteksi **Next.js**. Biarkan pengaturan default.
-2.  **Environment Variables**: Buka bagian **"Environment Variables"**. Ini adalah langkah paling penting. Tambahkan dua variabel yang sama persis seperti di file `.env.local` Anda.
-3.  **Deploy**: Klik tombol **"Deploy"**. Tunggu proses selesai, dan Vercel akan memberikan URL publik untuk aplikasi Anda.
+2.  **Environment Variables**: Buka bagian **"Environment Variables"**. Tambahkan dua variabel yang sama persis seperti di file `.env.local` Anda.
+3.  **Deploy**: Klik tombol **"Deploy"**. Tunggu proses selesai.
 
 ---
 
 ## 🛠️ 3. Manajemen & Pemeliharaan
 
-Tugas yang perlu dilakukan setelah aplikasi *live*.
-
 ### 3.1. Troubleshooting: "Invalid API Key"
-Jika Anda melihat error ini setelah deploy, itu berarti Anda lupa menambahkan Environment Variables.
+Jika Anda melihat error ini setelah deploy, itu berarti Anda lupa menambahkan Environment Variables di Vercel.
 1.  Buka dasbor proyek Anda di Vercel.
 2.  Klik tab **"Settings" > "Environment Variables"**.
 3.  Tambahkan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 4.  Pergi ke tab **"Deployments"**, cari deployment terbaru, klik menu `...` dan pilih **"Redeploy"**.
 
 ### 3.2. Memperbarui Aplikasi
-Setiap kali Anda ingin memperbarui aplikasi:
-1.  Lakukan perubahan pada kode di komputer lokal Anda.
-2.  Unggah perubahan tersebut ke GitHub dengan `git push`.
-3.  Vercel akan secara otomatis mendeteksi `push` tersebut dan memulai proses *redeployment* baru.
+Setiap kali Anda ingin memperbarui aplikasi, cukup lakukan `git push` ke GitHub. Vercel akan otomatis melakukan *redeployment*.
 
 ### 3.3. Membersihkan Data Uji Coba
-Untuk menghapus semua data dari tabel sebelum digunakan secara resmi:
-1.  Buka **SQL Editor** di Supabase.
-2.  Jalankan perintah berikut:
-    ```sql
-    TRUNCATE TABLE transaksi_pertalite RESTART IDENTITY;
-    ```
-    Perintah ini akan mengosongkan tabel dan me-reset ID kembali ke 1. **Tindakan ini tidak bisa dibatalkan.**
+Buka **SQL Editor** di Supabase dan jalankan perintah:
+```sql
+TRUNCATE TABLE transaksi_pertalite RESTART IDENTITY;
+```
+**Peringatan:** Tindakan ini tidak bisa dibatalkan.
 
 ---
 
 ## ✅ 4. Panduan Pengujian Fungsionalitas
 
-Checklist untuk memastikan semua fitur berjalan dengan baik.
+-   **[ ] Test 1: Alur Kerja Operator**
+    1.  Buka halaman utama. Masukkan plat nomor dengan format salah (misal: "AZRIEL"), klik "Cek". **Hasil:** Muncul error format tidak valid.
+    2.  Masukkan plat nomor valid, klik "Cek". **Hasil:** Muncul notifikasi "Boleh Mengisi" dan form liter muncul.
+    3.  Masukkan jumlah liter, klik "Simpan". **Hasil:** Muncul notifikasi sukses, form di-reset ke awal.
+    4.  Masukkan plat yang sama lagi, klik "Cek". **Hasil:** Muncul error "Sudah mengisi hari ini".
 
--   **[ ] Test 1: Input Data Valid**
-    1.  Buka halaman utama.
-    2.  Masukkan plat nomor dan jumlah liter yang valid.
-    3.  Klik "Simpan Transaksi".
-    4.  **Hasil yang Diharapkan**: Muncul notifikasi "Data berhasil disimpan!" dan form menjadi kosong.
+-   **[ ] Test 2: Alur Kerja Admin**
+    1.  Dari halaman utama, klik link "Login Admin".
+    2.  Coba login dengan password salah. **Hasil:** Muncul notifikasi error.
+    3.  Login dengan email dan password yang benar. **Hasil:** Berhasil diarahkan ke halaman Dashboard.
 
--   **[ ] Test 2: Input Duplikat**
-    1.  Masukkan plat nomor yang sama seperti pada Test 1.
-    2.  Klik "Simpan Transaksi".
-    3.  **Hasil yang Diharapkan**: Muncul notifikasi error "Plat nomor ... sudah mengisi hari ini." dan notifikasi tersebut hilang setelah beberapa detik.
+-   **[ ] Test 3: Fungsionalitas Dashboard**
+    1.  Pastikan kartu statistik dan grafik menampilkan data.
+    2.  Klik filter "7 Hari Terakhir". **Hasil:** Angka dan grafik berubah sesuai rentang waktu.
+    3.  Pastikan panel "Aktivitas Terkini" menampilkan 5 data terakhir.
+    4.  Klik "Lihat Riwayat". **Hasil:** Berpindah ke halaman riwayat dengan transisi geser.
 
--   **[ ] Test 3: Halaman Riwayat & Paginasi**
-    1.  Klik link "Lihat Riwayat Transaksi".
-    2.  **Hasil yang Diharapkan**: Halaman riwayat terbuka, menampilkan data yang baru saja diinput. Tombol "Sebelumnya" nonaktif, dan tombol "Berikutnya" aktif jika data lebih dari 20.
+-   **[ ] Test 4: Fungsionalitas Halaman Riwayat**
+    1.  Gunakan filter plat dan tanggal, lalu klik "Bersihkan". **Hasil:** Filter terhapus, data kembali normal.
+    2.  Klik judul kolom untuk sorting. **Hasil:** Data terurut dengan benar.
+    3.  Klik tombol "Ekspor ke CSV". **Hasil:** File `.csv` berisi data yang terfilter berhasil diunduh.
 
--   **[ ] Test 4: Filter & Tombol Bersihkan**
-    1.  Di halaman riwayat, ketik sebagian plat nomor di kolom pencarian.
-    2.  **Hasil yang Diharapkan**: Tabel hanya menampilkan data yang cocok.
-    3.  Klik tombol "Bersihkan".
-    4.  **Hasil yang Diharapkan**: Filter terhapus dan tabel menampilkan semua data kembali.
-
--   **[ ] Test 5: Sorting Tabel**
-    1.  Di halaman riwayat, klik pada judul kolom (misal: "Plat Nomor").
-    2.  **Hasil yang Diharapkan**: Data diurutkan berdasarkan kolom tersebut (A-Z). Ikon panah muncul.
-    3.  Klik lagi pada judul kolom yang sama.
-    4.  **Hasil yang Diharapkan**: Urutan data terbalik (Z-A).
-
--   **[ ] Test 6: Desain Responsif**
-    1.  Buka Developer Tools di browser (`F12`).
-    2.  Aktifkan mode perangkat (ikon HP/tablet).
-    3.  Pilih ukuran layar "iPhone 12 Pro" atau sejenisnya.
-    4.  **Hasil yang Diharapkan (Halaman Input)**: Form terlihat rapi dan tidak ada yang terpotong.
-    5.  **Hasil yang Diharapkan (Halaman Riwayat)**: Tabel berubah menjadi tumpukan kartu. Tombol paginasi tersusun secara vertikal (atas-bawah).
+-   **[ ] Test 5: Desain Responsif & Transisi**
+    1.  Buka Developer Tools (`F12`) dan aktifkan mode perangkat mobile.
+    2.  Navigasi antar semua halaman. **Hasil:** Transisi geser berjalan mulus tanpa kedip hitam.
+    3.  Periksa halaman riwayat. **Hasil:** Tabel menjadi kartu, paginasi tersusun vertikal.
