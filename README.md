@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPBUManagerialV1
 
-## Getting Started
+Aplikasi web minimalis untuk pencatatan transaksi bahan bakar Pertalite di SPBU. Aplikasi ini dirancang untuk kecepatan, kemudahan penggunaan, dan untuk menyediakan data yang dapat diaudit oleh manajemen.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Status Proyek: Versi 1.0 (Fungsional)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikasi saat ini sudah fungsional dan memiliki fitur-fitur inti yang dibutuhkan untuk operasional harian.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ✨ Fitur yang Sudah Diimplementasikan
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-   **Halaman Pencatatan Transaksi:**
+    -   Input untuk Plat Nomor Kendaraan.
+    -   Input untuk Jumlah Liter.
+    -   Kalkulasi harga otomatis berdasarkan harga per liter (Rp 10.000).
+    -   Tombol "Simpan" untuk mengirim data ke database.
+    -   Notifikasi sukses atau gagal setelah penyimpanan.
 
-## Learn More
+-   **Halaman Riwayat Transaksi:**
+    -   Menampilkan seluruh riwayat transaksi dalam bentuk tabel, diurutkan dari yang terbaru.
+    -   Fungsi filter untuk mencari transaksi berdasarkan Plat Nomor.
+    -   Fungsi filter untuk menampilkan transaksi pada Tanggal tertentu.
 
-To learn more about Next.js, take a look at the following resources:
+-   **Logika Bisnis & Keamanan:**
+    -   **Pencegahan Input Duplikat:** Aplikasi secara otomatis menolak input jika plat nomor yang sama sudah tercatat pada hari yang sama (reset setiap jam 00:00).
+    -   **Koneksi Aman:** Seluruh data yang dikirim ke database sudah terhubung dengan aman.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tumpukan Teknologi (Tech Stack)
 
-## Deploy on Vercel
+-   **Framework:** [Next.js](https://nextjs.org/) (React)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+-   **Database:** [Supabase](https://supabase.com/) (PostgreSQL)
+-   **Hosting:** [Vercel](https://vercel.com/) (direncanakan)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ⚙️ Cara Menjalankan Proyek Secara Lokal
+
+1.  **Clone Repository**
+    ```bash
+    git clone [https://github.com/azrlb23/SPBUManagerial.git](https://github.com/azrlb23/SPBUManagerial.git)
+    cd spbu-managerial
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Setup Environment Variables**
+    -   Buat file `.env.local` di direktori utama.
+    -   Isi file tersebut dengan kredensial Supabase Anda:
+        ```
+        NEXT_PUBLIC_SUPABASE_URL=URL_PROYEK_ANDA
+        NEXT_PUBLIC_SUPABASE_ANON_KEY=KUNCI_ANON_PUBLIC_ANDA
+        ```
+
+4.  **Jalankan Aplikasi**
+    ```bash
+    npm run dev
+    ```
+    Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
+
+---
+
+## 🔮 Langkah Selanjutnya (Rencana)
+
+-   Deployment proyek ke Vercel agar bisa diakses secara online.
+-   Menambahkan fitur *loading state* yang lebih baik pada tabel riwayat.
+-   Refactoring kode untuk meningkatkan kebersihan dan keterbacaan.
+-   (Opsional V2) Menambahkan sistem autentikasi untuk Admin/Manajer.
