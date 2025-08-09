@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +19,29 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Kode @layer components untuk tabel responsif */
+@layer components {
+  .responsive-table {
+    @apply min-w-full bg-white;
+  }
+  @media (max-width: 640px) {
+    .responsive-table thead {
+      @apply hidden; /* Sembunyikan header tabel di mobile */
+    }
+    .responsive-table tr {
+      @apply block mb-4 border rounded-lg shadow; /* Jadikan setiap baris sebagai kartu */
+    }
+    .responsive-table td {
+      @apply flex justify-between items-center p-3 border-b; /* Atur sel sebagai baris flex */
+    }
+    .responsive-table td:last-child {
+      @apply border-b-0;
+    }
+    .responsive-table td::before {
+      content: attr(data-label); /* Tampilkan label data sebagai judul */
+      @apply font-bold mr-4 text-sm text-gray-600;
+    }
+  }
 }

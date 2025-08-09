@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient'; // Path sudah disesuaikan untuk folder src
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 import Link from 'next/link';
 
 export default function Home() {
@@ -10,6 +10,9 @@ export default function Home() {
   const [harga, setHarga] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // 1. Membuat 'ref' untuk menunjuk ke input liter
+  const literInputRef = useRef(null);
 
   const HARGA_PER_LITER = 10000;
 
@@ -22,11 +25,20 @@ export default function Home() {
     }
   }, [liter]);
 
+  // 2. Fungsi untuk memindahkan fokus saat 'Enter' ditekan
+  const handlePlatKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Mencegah form tersubmit
+      literInputRef.current.focus(); // Pindahkan fokus ke input liter
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!platNomor.trim() || !liter.trim() || parseFloat(liter) <= 0) {
       setMessage({ type: 'error', text: 'Plat nomor dan liter harus diisi dengan benar.' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
       return;
     }
 
@@ -46,7 +58,6 @@ export default function Home() {
     if (checkError) {
       setMessage({ type: 'error', text: `Gagal memeriksa data: ${checkError.message}` });
       setIsLoading(false);
-      // Tambahkan timeout di sini juga untuk konsistensi
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
       return;
     }
@@ -54,11 +65,7 @@ export default function Home() {
     if (existingData && existingData.length > 0) {
       setMessage({ type: 'error', text: `Error: Plat nomor ${platNomor.toUpperCase().trim()} sudah mengisi hari ini.` });
       setIsLoading(false);
-      
-      // --- INI BARIS YANG DITAMBAHKAN ---
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-      // ------------------------------------
-      
       return;
     }
 
@@ -77,8 +84,6 @@ export default function Home() {
       setPlatNomor('');
       setLiter('');
     }
-
-    // Timeout ini sekarang hanya untuk pesan sukses/gagal insert
     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
 
@@ -98,6 +103,7 @@ export default function Home() {
               id="platNomor"
               value={platNomor}
               onChange={(e) => setPlatNomor(e.target.value)}
+              onKeyDown={handlePlatKeyDown} // 3. Terapkan fungsi di sini
               className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline uppercase"
               placeholder="KT 1234 ABC"
               required
@@ -110,6 +116,8 @@ export default function Home() {
             <input
               type="number"
               id="liter"
+              ref={literInputRef} // 4. Hubungkan ref di sini
+              inputMode="decimal" // 5. Ini akan memunculkan keyboard numerik di mobile
               value={liter}
               onChange={(e) => setLiter(e.target.value)}
               className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
