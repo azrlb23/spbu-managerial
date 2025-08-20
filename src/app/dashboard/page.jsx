@@ -1,25 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase, logActivity } from '../../../lib/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import toast from 'react-hot-toast';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-// Komponen Kartu Statistik (tidak berubah)
-const StatCard = ({ title, value, unit }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md text-center">
-    <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-    <p className="mt-1 text-3xl font-semibold text-gray-900">
-      {value} <span className="text-lg font-normal">{unit}</span>
+// Komponen Kartu Statistik (diperbarui untuk teks lebih adaptif)
+const StatCard = ({ title, value, unit, smallText = false }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md text-center h-full flex flex-col justify-center">
+    <h3 className="text-sm font-medium text-gray-500 truncate">{title}</h3>
+    <p className={`mt-1 font-semibold text-gray-900 ${smallText ? 'text-xl md:text-2xl' : 'text-3xl'}`}>
+      {value} {unit && <span className="text-lg font-normal">{unit}</span>}
     </p>
   </div>
 );
 
-// Komponen Skeleton (tidak berubah)
+// Komponen Skeleton (dari kode asli Anda, tidak berubah)
 const DashboardSkeleton = () => (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 animate-pulse">
     <div className="max-w-7xl mx-auto">
@@ -33,7 +34,9 @@ const DashboardSkeleton = () => (
           <div className="h-10 bg-gray-200 rounded w-24"></div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="h-28 bg-white p-6 rounded-lg shadow-md"></div>
+        <div className="h-28 bg-white p-6 rounded-lg shadow-md"></div>
         <div className="h-28 bg-white p-6 rounded-lg shadow-md"></div>
         <div className="h-28 bg-white p-6 rounded-lg shadow-md"></div>
       </div>
@@ -45,29 +48,22 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-// --- KOMPONEN BARU UNTUK AKTIVITAS TERKINI ---
+// Komponen Aktivitas Terkini (dari kode asli Anda, tidak berubah)
 const RecentActivity = ({ transactions }) => {
-    // Fungsi untuk format waktu relatif (misal: "5 menit yang lalu")
     const timeAgo = (date) => {
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " tahun lalu";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " bulan lalu";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " hari lalu";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " jam lalu";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " menit lalu";
+        let interval = seconds / 31536000; if (interval > 1) return Math.floor(interval) + " tahun lalu";
+        interval = seconds / 2592000; if (interval > 1) return Math.floor(interval) + " bulan lalu";
+        interval = seconds / 86400; if (interval > 1) return Math.floor(interval) + " hari lalu";
+        interval = seconds / 3600; if (interval > 1) return Math.floor(interval) + " jam lalu";
+        interval = seconds / 60; if (interval > 1) return Math.floor(interval) + " menit lalu";
         return "Baru saja";
     };
-
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md h-full">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Aktivitas Terkini</h2>
             <ul className="space-y-4">
-                {transactions.length > 0 ? transactions.map(trx => (
+                {transactions.length > 0 ? transactions.slice(0, 5).map(trx => (
                     <li key={trx.id} className="flex justify-between items-center">
                         <div>
                             <p className="font-semibold text-gray-900">{trx.plat_nomor}</p>
@@ -75,122 +71,149 @@ const RecentActivity = ({ transactions }) => {
                         </div>
                         <p className="text-sm text-gray-400">{timeAgo(trx.waktu_pencatatan)}</p>
                     </li>
-                )) : (
-                    <p className="text-gray-500">Belum ada aktivitas hari ini.</p>
-                )}
+                )) : ( <p className="text-gray-500">Belum ada aktivitas.</p> )}
             </ul>
         </div>
     );
 };
 
+// --- KOMPONEN BARU: LEADERBOARDS ---
+const Leaderboard = ({ title, data, valueKey, labelKey, unit = '' }) => (
+    <div className="bg-white p-6 rounded-lg shadow-md h-full">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+        <ul className="space-y-3">
+            {data.length > 0 ? data.map((item, index) => (
+                <li key={index} className="flex justify-between items-center text-sm">
+                    <p className="font-medium text-gray-700 truncate w-2/3">{index + 1}. {item[labelKey]}</p>
+                    <p className="font-bold text-gray-900">{item[valueKey].toLocaleString('id-ID')} {unit}</p>
+                </li>
+            )) : <p className="text-gray-500 text-sm">Tidak ada data.</p>}
+        </ul>
+    </div>
+);
+
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
-  const [stats, setStats] = useState({ totalTransaksi: 0, totalLiter: 0 });
-  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [isLoading, setIsLoading] = useState(true);
-  const [view, setView] = useState('today');
-  const [recentTransactions, setRecentTransactions] = useState([]); // State baru
+  const [view, setView] = useState('today'); // State untuk kontrol tampilan
   const router = useRouter();
 
+  // State untuk menyimpan semua transaksi mentah, diambil sekali saja
+  const [allTransactions, setAllTransactions] = useState([]);
+  
+  // State untuk menyimpan data yang sudah dikalkulasi untuk ditampilkan
+  const [displayData, setDisplayData] = useState(null);
+
   useEffect(() => {
-    const checkUserAndFetchData = async () => {
-      setIsLoading(true);
+    // Fungsi ini hanya memeriksa peran dan mengambil semua data sekali
+    const checkUserRoleAndFetch = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
+      if (!session) { router.push('/'); return; }
+
+      const { data: role } = await supabase.rpc('get_user_role');
+      if (role !== 'manajer') {
+        await logActivity('ACCESS_DENIED', { attemptedPage: '/dashboard', userRole: role || 'unknown' });
+        toast.error('Akses ditolak. Anda bukan manajer.');
+        await supabase.auth.signOut();
+        router.push('/');
         return;
       }
       setUser(session.user);
-
-      const now = new Date();
-      let startDate;
-      if (view === 'today') {
-        startDate = new Date(now.setHours(0, 0, 0, 0));
-      } else {
-        startDate = new Date(now.setDate(now.getDate() - 6));
-        startDate.setHours(0, 0, 0, 0);
-      }
-
-      // Ambil data utama untuk statistik dan grafik
-      const { data, error } = await supabase
-        .from('transaksi_pertalite')
-        .select('id, liter, waktu_pencatatan, plat_nomor') // Tambah id dan plat_nomor
-        .gte('waktu_pencatatan', startDate.toISOString())
-        .order('waktu_pencatatan', { ascending: false }); // Urutkan dari terbaru
-
+      
+      const { data, error } = await supabase.from('transaksi_pertalite').select('*').order('waktu_pencatatan', { ascending: false });
       if (error) {
-        console.error("Error fetching data:", error);
+        toast.error("Gagal memuat data utama.");
+        console.error(error);
       } else {
-        // Ambil 5 data teratas untuk "Aktivitas Terkini"
-        setRecentTransactions(data.slice(0, 5));
-        
-        const totalTransaksi = data.length;
-        const totalLiter = data.reduce((sum, trx) => sum + trx.liter, 0);
-        setStats({ totalTransaksi, totalLiter: totalLiter.toFixed(2) });
-
-        if (view === 'today') {
-          const hourlyData = Array(24).fill(0);
-          data.forEach(trx => {
-            const jam = new Date(trx.waktu_pencatatan).getHours();
-            hourlyData[jam]++;
-          });
-          setChartData({
-            labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
-            datasets: [{
-              label: 'Transaksi per Jam', data: hourlyData,
-              // --- PENERAPAN GRADIENT WARNA ---
-              backgroundColor: (context) => {
-                  const ctx = context.chart.ctx;
-                  if (!ctx) return 'rgba(59, 130, 246, 0.5)';
-                  const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-                  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-                  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
-                  return gradient;
-              },
-              borderColor: 'rgba(59, 130, 246, 1)',
-              borderWidth: 1,
-            }],
-          });
-        } else { // 'weekly'
-          const dailyData = Array(7).fill(0);
-          const dayLabels = [];
-          const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-          for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            dayLabels.push(days[d.getDay()]);
-          }
-          data.forEach(trx => {
-            const transactionDate = new Date(trx.waktu_pencatatan);
-            const diffDays = Math.floor((new Date() - transactionDate) / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0 && diffDays < 7) {
-              dailyData[6 - diffDays]++;
-            }
-          });
-          setChartData({
-            labels: dayLabels,
-            datasets: [{
-              label: 'Transaksi per Hari', data: dailyData,
-              backgroundColor: 'rgba(16, 185, 129, 0.5)',
-              borderColor: 'rgba(16, 185, 129, 1)',
-              borderWidth: 1,
-            }],
-          });
-        }
+        setAllTransactions(data);
       }
       setIsLoading(false);
     };
+    checkUserRoleAndFetch();
+  }, [router]);
 
-    checkUserAndFetchData();
-  }, [router, view]);
+  useEffect(() => {
+    // useEffect ini berjalan setiap kali 'view' atau 'allTransactions' berubah
+    if (allTransactions.length === 0) return;
+
+    const now = new Date();
+    let filteredData;
+    let title;
+
+    if (view === 'today') {
+      const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+      filteredData = allTransactions.filter(t => new Date(t.waktu_pencatatan) >= todayStart);
+      title = "Analitik Hari Ini";
+    } else if (view === 'weekly') {
+      const weekStart = new Date(new Date().setDate(now.getDate() - 7));
+      filteredData = allTransactions.filter(t => new Date(t.waktu_pencatatan) >= weekStart);
+      title = "Analitik 7 Hari Terakhir";
+    } else if (view === 'monthly') {
+        const monthStart = new Date(new Date().setDate(now.getDate() - 30));
+        filteredData = allTransactions.filter(t => new Date(t.waktu_pencatatan) >= monthStart);
+        title = "Analitik 30 Hari Terakhir";
+    } else { // 'all'
+      filteredData = allTransactions;
+      title = "Analitik Keseluruhan (All-Time)";
+    }
+
+    // --- MULAI KALKULASI DATA ---
+    const totalTransaksi = filteredData.length;
+    const totalLiter = filteredData.reduce((sum, trx) => sum + trx.liter, 0);
+    const totalPendapatan = filteredData.reduce((sum, trx) => sum + trx.harga, 0);
+    const avgLiter = totalTransaksi > 0 ? totalLiter / totalTransaksi : 0;
+    
+    const platCounts = filteredData.reduce((acc, trx) => {
+        acc[trx.plat_nomor] = (acc[trx.plat_nomor] || 0) + 1;
+        return acc;
+    }, {});
+    const topPlat = Object.keys(platCounts).length > 0 ? Object.keys(platCounts).reduce((a, b) => platCounts[a] > platCounts[b] ? a : b) : 'N/A';
+
+    const vehicleData = filteredData.reduce((acc, trx) => {
+        const type = trx.jenis_kendaraan || 'Tidak Diketahui'; // Perbaikan label
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+    }, {});
+    const vehicleDistribution = {
+        labels: Object.keys(vehicleData),
+        datasets: [{ data: Object.values(vehicleData), backgroundColor: ['#3B82F6', '#10B981', '#9CA3AF'] }]
+    };
+
+    const shiftData = filteredData.reduce((acc, trx) => {
+        const shift = `Shift ${trx.shift || 'N/A'}`;
+        acc[shift] = (acc[shift] || 0) + 1;
+        return acc;
+    }, {});
+    const shiftDistribution = {
+        labels: Object.keys(shiftData),
+        datasets: [{ data: Object.values(shiftData), backgroundColor: ['#F59E0B', '#EF4444', '#8B5CF6'] }]
+    };
+
+    const operatorPerformance = Object.entries(filteredData.reduce((acc, trx) => {
+        const email = trx.operator_email || 'Tidak Diketahui';
+        if (!acc[email]) acc[email] = 0;
+        acc[email] += trx.liter;
+        return acc;
+    }, {})).map(([email, liters]) => ({ email, totalLiters: liters })).sort((a,b) => b.totalLiters - a.totalLiters).slice(0, 5);
+    
+    const customerPerformance = Object.entries(platCounts).map(([plate, count]) => ({ plate, totalFills: count })).sort((a,b) => b.totalFills - a.totalFills).slice(0, 5);
+
+    setDisplayData({
+        title, totalTransaksi, totalLiter, totalPendapatan, avgLiter, topPlat,
+        vehicleDistribution, shiftDistribution, operatorPerformance, customerPerformance
+    });
+
+  }, [view, allTransactions]);
 
   const handleLogout = async () => {
+    await logActivity('LOGOUT');
     await supabase.auth.signOut();
-    router.push('/login');
+    toast.success('Anda berhasil logout.');
+    router.push('/');
   };
 
-  if (!user || isLoading) {
+  if (isLoading || !user) {
     return <DashboardSkeleton />;
   }
 
@@ -199,56 +222,58 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-sm text-gray-500">
-              Menampilkan data untuk: <span className="font-semibold">{view === 'today' ? 'Hari Ini' : '7 Hari Terakhir'}</span>
-            </p>
+            <h1 className="text-3xl font-bold text-gray-800">Dashboard Analitik</h1>
+            <p className="text-md text-gray-500">Pusat komando untuk keseluruhan performa SPBU.</p>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
-            <Link href="/riwayat" className="text-blue-500 hover:text-blue-700 font-bold">
-              Lihat Riwayat &rarr;
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Logout
-            </button>
+            <Link href="/laporan" className="text-green-600 hover:text-green-800 font-bold">Buat Laporan &rarr;</Link>
+            <Link href="/riwayat" className="text-blue-500 hover:text-blue-700 font-bold">Lihat Riwayat &rarr;</Link>
+            <button onClick={handleLogout} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</button>
           </div>
         </div>
 
-        <div className="flex justify-center gap-2 mb-8">
-            <button onClick={() => setView('today')} className={`px-4 py-2 rounded-md font-semibold ${view === 'today' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>
-                Hari Ini
-            </button>
-            <button onClick={() => setView('weekly')} className={`px-4 py-2 rounded-md font-semibold ${view === 'weekly' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>
-                7 Hari Terakhir
-            </button>
+        <div className="flex justify-center flex-wrap gap-2 mb-8 bg-white p-2 rounded-lg shadow-sm">
+            <button onClick={() => setView('today')} className={`px-4 py-2 rounded-md font-semibold text-sm ${view === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Hari Ini</button>
+            <button onClick={() => setView('weekly')} className={`px-4 py-2 rounded-md font-semibold text-sm ${view === 'weekly' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>7 Hari Terakhir</button>
+            <button onClick={() => setView('monthly')} className={`px-4 py-2 rounded-md font-semibold text-sm ${view === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>30 Hari Terakhir</button>
+            <button onClick={() => setView('all')} className={`px-4 py-2 rounded-md font-semibold text-sm ${view === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Semua</button>
         </div>
+        
+        {displayData && (
+            <div id="analytics-content">
+                <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-6">{displayData.title}</h2>
+                
+                {/* Bagian Statistik Utama */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                    <StatCard title="Total Transaksi" value={displayData.totalTransaksi.toLocaleString('id-ID')} unit="kendaraan" />
+                    <StatCard title="Total Liter" value={displayData.totalLiter.toLocaleString('id-ID', { maximumFractionDigits: 2 })} unit="L" />
+                    <StatCard title="Pendapatan Kotor" value={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(displayData.totalPendapatan)} smallText={true}/>
+                    <StatCard title="Rata-rata/Transaksi" value={displayData.avgLiter.toLocaleString('id-ID', { maximumFractionDigits: 2 })} unit="L" />
+                    <StatCard title="Plat Paling Sering" value={displayData.topPlat} smallText={true} />
+                </div>
+                
+                {/* Bagian Grafik dan Aktivitas */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div className="lg:col-span-1">
+                        <RecentActivity transactions={allTransactions} />
+                    </div>
+                    <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Distribusi Kendaraan</h3>
+                        <Pie data={displayData.vehicleDistribution} options={{ plugins: { legend: { position: 'bottom' } } }} />
+                    </div>
+                    <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Distribusi Shift</h3>
+                        <Pie data={displayData.shiftDistribution} options={{ plugins: { legend: { position: 'bottom' } } }} />
+                    </div>
+                </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <StatCard title="Total Transaksi" value={stats.totalTransaksi} unit="kendaraan" />
-          <StatCard title="Total Liter Terjual" value={stats.totalLiter} unit="L" />
-        </div>
-
-        {/* --- LAYOUT BARU UNTUK GRAFIK DAN AKTIVITAS TERKINI --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                {view === 'today' ? 'Aktivitas Transaksi per Jam' : 'Distribusi Transaksi Mingguan'}
-              </h2>
-              <Bar 
-                options={{
-                  responsive: true,
-                  plugins: { legend: { position: 'top' }, title: { display: false } }
-                }} 
-                data={chartData} 
-              />
+                {/* Bagian Leaderboards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Leaderboard title="Top 5 Operator (Total Liter)" data={displayData.operatorPerformance} valueKey="totalLiters" labelKey="email" unit="L" />
+                    <Leaderboard title="Top 5 Pelanggan (Jumlah Isi)" data={displayData.customerPerformance} valueKey="totalFills" labelKey="plate" unit="kali" />
+                </div>
             </div>
-            <div className="lg:col-span-1">
-                <RecentActivity transactions={recentTransactions} />
-            </div>
-        </div>
+        )}
 
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Template from "../components/template";
+import { Toaster } from 'react-hot-toast'; // <-- 1. Import Toaster
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,11 +14,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning={true}>
-        {/* PERUBAHAN DI SINI:
-          Kita membuat sebuah elemen <main> sebagai "panggung" yang permanen.
-          Elemen inilah yang memegang warna latar belakang dan tidak akan pernah beranimasi.
-          Komponen <Template> dan semua halaman akan dirender di dalamnya.
-        */}
+        {/* 2. Tambahkan komponen Toaster di sini */}
+        <Toaster position="top-center" reverseOrder={false} />
         <main className="min-h-screen bg-gray-50">
           <Template>{children}</Template>
         </main>
