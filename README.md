@@ -1,165 +1,192 @@
-# SPBUManagerialV1 - Dokumentasi Lengkap Proyek
+# SPBUManagerialV2 - Dokumentasi Proyek
 
-Aplikasi web minimalis untuk pencatatan transaksi bahan bakar Pertalite di SPBU. Dokumen ini berisi panduan lengkap dari setup awal, deployment, hingga pengujian dan pemeliharaan aplikasi.
+**SPBUManagerialV2** adalah aplikasi web komprehensif yang dirancang untuk pencatatan transaksi bahan bakar di SPBU, kini dengan sistem multi-pengguna berbasis peran, dasbor analitik yang kaya, dan sistem pencatatan log untuk keamanan dan audit.
 
 ---
 
-## 🚀 Status Proyek: Versi 1.5 (Fitur Lanjutan)
+## 🚀 Status Proyek: Versi 2.0 (Comprehensive Analytics & Role-Based Access)
 
-Aplikasi telah berkembang dari MVP menjadi produk yang lebih matang dengan penambahan fitur keamanan, analisis data, dan peningkatan signifikan pada pengalaman pengguna (UX).
+Aplikasi telah berevolusi menjadi platform manajemen yang matang dengan arsitektur multi-pengguna, dasbor analitik terpusat, dan fungsionalitas laporan yang kuat untuk mendukung pengambilan keputusan bisnis.
 
-### ✨ Fitur yang Sudah Diimplementasikan
+### ✨ Fitur Utama yang Telah Diimplementasikan
 
-#### Fitur Operator (Halaman Utama)
--   **Pengecekan Plat Dahulu**: Alur kerja baru dimana plat nomor dicek terlebih dahulu sebelum menampilkan form input liter.
--   **Validasi Format Plat Nomor**: Menerapkan Regex untuk memastikan format plat nomor sesuai standar (contoh: KT 1234 ABC).
--   **Input Liter & Harga Otomatis**: Form untuk input jumlah liter dengan kalkulasi harga otomatis.
--   **Pencegahan Input Duplikat**: Logika untuk menolak input jika plat nomor yang sama sudah tercatat pada hari yang sama (reset jam 00:00).
--   **Peningkatan UX**:
-    -   Keyboard numerik otomatis muncul di perangkat mobile untuk input liter.
-    -   Fokus otomatis berpindah ke kolom liter setelah menekan "Enter" pada kolom plat.
+#### Sistem Global & Keamanan
+- **Sistem Login Berbasis Peran**: Aplikasi kini mewajibkan login. Tampilan dan hak akses secara otomatis disesuaikan berdasarkan peran pengguna (**Manajer** atau **Operator**).
+- **Kontrol Akses (RLS)**: Menggunakan *Row Level Security* Supabase secara ekstensif untuk memastikan operator hanya bisa mengakses data yang diizinkan, sementara manajer memiliki akses penuh.
+- **Pencatatan Log Aktivitas**: Setiap aksi penting (login, logout, pembuatan transaksi, ekspor data, upaya akses ditolak) secara otomatis dicatat dalam tabel `activity_logs` untuk audit dan keamanan.
 
-#### Fitur Admin/Manajer (Dilindungi Login)
--   **Sistem Autentikasi**: Halaman `/login` khusus untuk admin/manajer menggunakan **Supabase Auth**.
--   **Dashboard Analitik (`/dashboard`)**:
-    -   Menampilkan ringkasan data visual dengan filter "Hari Ini" dan "7 Hari Terakhir".
-    -   Kartu statistik untuk "Total Transaksi" dan "Total Liter Terjual".
-    -   Grafik batang interaktif untuk transaksi per jam (harian) atau per hari (mingguan).
-    -   Panel "Aktivitas Terkini" yang menampilkan 5 transaksi terakhir.
--   **Halaman Riwayat Transaksi (`/riwayat`)**:
-    -   Menampilkan data transaksi dengan sistem **paginasi** (20 data per halaman).
-    -   Fungsi filter berdasarkan plat nomor dan tanggal.
-    -   Fungsi **sorting** data pada setiap kolom tabel (naik/turun).
-    -   Fitur **Ekspor ke CSV** untuk mengunduh data yang telah difilter.
+#### Fitur untuk Operator
+- **Alur Kerja Efisien**: Operator memilih jenis kendaraan (**Mobil/Motor**), lalu melanjutkan ke alur pengecekan plat dan input liter yang sudah divalidasi.
+- **Deteksi Shift Otomatis**: Sistem secara otomatis mendeteksi dan menyimpan shift kerja (Shift 1 atau 2) berdasarkan jam transaksi.
+- **Riwayat Harian Terpusat**: Operator dapat mengakses halaman riwayat khusus yang menampilkan **semua transaksi dari semua operator** pada hari itu, lengkap dengan fitur pencarian dan paginasi.
+- **Peningkatan UX**: Notifikasi *toast* modern (`react-hot-toast`) dan animasi transisi (`framer-motion`) digunakan di seluruh alur kerja operator untuk pengalaman yang lebih baik.
 
-#### Peningkatan Antarmuka & Pengalaman Pengguna (Global)
--   **Transisi Halaman Mulus**: Animasi geser yang halus antar halaman menggunakan `framer-motion` tanpa efek "kedip hitam".
--   **Skeleton UI**: Tampilan *loading* yang profesional di halaman Dashboard dan Riwayat.
--   **Desain Sepenuhnya Responsif**:
-    -   Tabel riwayat berubah menjadi tumpukan kartu di layar mobile.
-    -   Tombol paginasi menyesuaikan layout secara vertikal di layar mobile.
+#### Fitur untuk Manajer
+- **Dashboard Analitik Komprehensif**: Halaman dasbor utama kini menjadi pusat analitik terpusat.
+    - **Filter Rentang Waktu**: Manajer dapat dengan mudah beralih tampilan data antara **"Hari Ini", "7 Hari", "30 Hari",** dan **"Semua"**.
+    - **Kartu Statistik Dinamis**: Menampilkan metrik kunci seperti Total Transaksi, Total Liter, Pendapatan Kotor, Rata-rata per Transaksi, dan Plat Paling Sering untuk rentang waktu yang dipilih.
+    - **Visualisasi Data**: Grafik pai untuk distribusi **Jenis Kendaraan** dan **Shift**.
+    - **Leaderboards**: Papan peringkat untuk **Top 5 Operator** (berdasarkan total liter) dan **Top 5 Pelanggan** (berdasarkan frekuensi pengisian).
+- **Riwayat Transaksi Lanjutan**: Halaman riwayat kini memiliki filter lengkap berdasarkan Plat, Tanggal, **Shift, Operator,** dan **Jenis Kendaraan**.
+- **Halaman Laporan Khusus**: Manajer dapat membuat laporan ringkasan performa untuk rentang tanggal kustom, menampilkan statistik utama dan detail transaksi.
 
 ---
 
 ## 🛠️ Tumpukan Teknologi (Tech Stack)
 
--   **Framework:** [Next.js](https://nextjs.org/) (React)
--   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
--   **Database & Autentikasi:** [Supabase](https://supabase.com/) (PostgreSQL & Supabase Auth)
--   **Grafik:** [Chart.js](https://www.chartjs.org/) dengan `react-chartjs-2`
--   **Animasi:** [Framer Motion](https://www.framer.com/motion/)
--   **Utilitas CSV:** [Papaparse](https://www.papaparse.com/)
--   **Hosting:** [Vercel](https://vercel.com/)
+- **Framework:** [Next.js](https://nextjs.org/) (React)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Database & Autentikasi:** [Supabase](https://supabase.com/) (PostgreSQL & Supabase Auth)
+- **Grafik:** [Chart.js](https://www.chartjs.org/) dengan `react-chartjs-2`
+- **Animasi:** [Framer Motion](https://www.framer.com/motion/)
+- **Notifikasi:** [React Hot Toast](https://react-hot-toast.com/)
+- **Utilitas CSV:** [Papaparse](https://www.papaparse.com/)
+- **Hosting:** [Vercel](https://vercel.com/)
 
 ---
 
 ## ⚙️ 1. Setup Proyek & Pengembangan Lokal
 
-### 1.1. Clone Repository
+### 1.1. Clone & Install
 ```bash
-git clone [https://github.com/azrlb23/SPBUManagerial.git](https://github.com/azrlb23/SPBUManagerial.git)
+git clone [URL_REPOSITORY_ANDA]
 cd spbu-managerial
-```
-
-### 1.2. Install Dependencies
-```bash
 npm install
 ```
 
-### 1.3. Konfigurasi Database & Environment
-1.  **Buat Tabel di Supabase**: Buka **SQL Editor** di Supabase, jalankan query berikut:
-    ```sql
-    CREATE TABLE transaksi_pertalite (
-      id BIGSERIAL PRIMARY KEY,
-      plat_nomor TEXT NOT NULL,
-      liter NUMERIC(10, 2) NOT NULL,
-      harga BIGINT NOT NULL,
-      waktu_pencatatan TIMESTAMPTZ DEFAULT now() NOT NULL
-    );
-    ```
-2.  **Setup Autentikasi**: Di dasbor Supabase, pergi ke **Authentication > Providers** dan pastikan **Email** aktif. Kemudian di tab **Users**, klik **"Add user"** untuk membuat akun admin/manajer.
-3.  **Setup Environment Variables**: Buat file `.env.local` dan isi dengan kredensial Supabase Anda:
+### 1.2. Konfigurasi Database & Environment
+Proyek ini memerlukan setup database yang spesifik.
+
+1.  **Setup Environment Variables**: Buat file `.env.local` dan isi dengan kredensial Supabase Anda:
     ```
     NEXT_PUBLIC_SUPABASE_URL=URL_PROYEK_ANDA
     NEXT_PUBLIC_SUPABASE_ANON_KEY=KUNCI_ANON_PUBLIC_ANDA
     ```
+2.  **Jalankan SQL Setup**: Buka **SQL Editor** di dasbor Supabase Anda dan jalankan **semua query** di bawah ini secara berurutan. Ini akan membuat tabel, relasi, fungsi, dan kebijakan keamanan yang diperlukan.
 
-### 1.4. Jalankan Aplikasi Lokal
+    ```sql
+    -- 1. BUAT TABEL UNTUK PERAN PENGGUNA
+    CREATE TABLE public.user_roles (
+      user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL
+    );
+
+    -- 2. BUAT TABEL UTAMA UNTUK TRANSAKSI (DENGAN KOLOM BARU)
+    CREATE TABLE public.transaksi_pertalite (
+      id BIGSERIAL PRIMARY KEY,
+      plat_nomor TEXT NOT NULL,
+      liter NUMERIC(10, 2) NOT NULL,
+      harga BIGINT NOT NULL,
+      waktu_pencatatan TIMESTAMPTZ DEFAULT now() NOT NULL,
+      operator_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+      operator_email TEXT,
+      shift INT,
+      jenis_kendaraan TEXT
+    );
+
+    -- 3. BUAT TABEL UNTUK LOG AKTIVITAS
+    CREATE TABLE public.activity_logs (
+      id BIGSERIAL PRIMARY KEY,
+      timestamp TIMESTAMPTZ DEFAULT now() NOT NULL,
+      user_email TEXT,
+      action TEXT NOT NULL,
+      details JSONB
+    );
+
+    -- 4. BUAT FUNGSI DATABASE
+    -- Fungsi untuk mendapatkan peran pengguna
+    CREATE OR REPLACE FUNCTION get_user_role()
+    RETURNS TEXT AS $$
+    DECLARE
+      user_role TEXT;
+    BEGIN
+      SELECT role INTO user_role FROM public.user_roles WHERE user_id = auth.uid();
+      RETURN user_role;
+    END;
+    $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+    -- Fungsi untuk deteksi shift otomatis (Zona Waktu: WITA)
+    CREATE OR REPLACE FUNCTION get_current_shift()
+    RETURNS INT AS $$
+    DECLARE
+      current_hour INT;
+    BEGIN
+      current_hour := EXTRACT(HOUR FROM (now() AT TIME ZONE 'Asia/Makassar'));
+      IF current_hour >= 7 AND current_hour < 13 THEN RETURN 1;
+      ELSIF current_hour >= 13 AND current_hour < 23 THEN RETURN 2;
+      ELSE RETURN 0;
+      END IF;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    -- Fungsi untuk trigger
+    CREATE OR REPLACE FUNCTION set_shift_on_insert()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.shift = get_current_shift();
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    -- 5. PASANG TRIGGER
+    CREATE TRIGGER before_insert_set_shift
+    BEFORE INSERT ON transaksi_pertalite
+    FOR EACH ROW
+    EXECUTE FUNCTION set_shift_on_insert();
+
+    -- 6. AKTIFKAN ROW LEVEL SECURITY (RLS)
+    ALTER TABLE public.transaksi_pertalite ENABLE ROW LEVEL SECURITY;
+
+    -- 7. BUAT KEBIJAKAN (POLICIES) RLS
+    -- Manajer bisa melihat semua data
+    CREATE POLICY "Manajer can view all transactions"
+    ON public.transaksi_pertalite FOR SELECT
+    USING ((SELECT role FROM public.user_roles WHERE user_id = auth.uid()) = 'manajer');
+
+    -- Operator bisa menambah data baru
+    CREATE POLICY "Operator can insert transactions"
+    ON public.transaksi_pertalite FOR INSERT
+    WITH CHECK ((SELECT role FROM public.user_roles WHERE user_id = auth.uid()) = 'operator');
+
+    -- Operator bisa melihat semua data HARI INI
+    CREATE POLICY "Operator can view today's transactions"
+    ON public.transaksi_pertalite FOR SELECT
+    USING ((SELECT role FROM public.user_roles WHERE user_id = auth.uid()) = 'operator' AND waktu_pencatatan >= date_trunc('day', now()));
+    ```
+
+3.  **Setup Pengguna & Peran**:
+    * Di dasbor Supabase, pergi ke **Authentication > Users** untuk membuat akun Manajer dan Operator.
+    * Dapatkan `ID` dari setiap pengguna, lalu jalankan query berikut di **SQL Editor** untuk menetapkan peran mereka:
+        ```sql
+        -- Ganti 'user_id_manajer' dan 'user_id_operator' dengan ID yang sebenarnya
+        INSERT INTO public.user_roles (user_id, role) VALUES
+        ('user_id_manajer', 'manajer'),
+        ('user_id_operator', 'operator');
+        ```
+
+### 1.3. Jalankan Aplikasi Lokal
 ```bash
 npm run dev
 ```
-Buka **http://localhost:3000** di browser Anda.
+Buka **http://localhost:3000**. Aplikasi akan mengarahkan Anda ke halaman login.
 
 ---
 
-## 🚀 2. Deployment ke Vercel
+## ✅ 2. Panduan Pengujian Fungsionalitas (V2)
 
-### 2.1. Simpan Kode ke GitHub
-Pastikan semua perubahan terbaru sudah diunggah ke GitHub:
-```bash
-git add .
-git commit -m "Menyiapkan untuk deployment"
-git push origin main
-```
+- **[ ] Test 1: Alur Login & Akses**
+    1. Coba akses `/dashboard` atau `/operator` tanpa login. **Hasil:** Harus diarahkan ke halaman login (`/`).
+    2. Login sebagai **Operator**. **Hasil:** Diarahkan ke `/operator`.
+    3. Coba akses `/dashboard` sebagai Operator. **Hasil:** Akses ditolak dan di-logout.
+    4. Login sebagai **Manajer**. **Hasil:** Diarahkan ke `/dashboard`.
 
-### 2.2. Import Proyek ke Vercel
-1.  Buka [vercel.com](https://vercel.com) dan login dengan akun GitHub Anda.
-2.  Klik **"Add New..." > "Project"**.
-3.  Cari repository `spbu-managerial` dan klik **"Import"**.
+- **[ ] Test 2: Fungsionalitas Operator**
+    1. Lakukan input transaksi lengkap (pilih jenis, cek plat valid, isi liter, simpan). **Hasil:** Notifikasi *toast* sukses, form kembali ke awal.
+    2. Cek plat yang sama lagi. **Hasil:** Notifikasi *toast* error "sudah mengisi".
+    3. Buka halaman riwayat operator. **Hasil:** Data yang baru saja diinput muncul.
 
-### 2.3. Konfigurasi & Deploy
-1.  **Framework Preset**: Vercel akan otomatis mendeteksi **Next.js**. Biarkan pengaturan default.
-2.  **Environment Variables**: Buka bagian **"Environment Variables"**. Tambahkan dua variabel yang sama persis seperti di file `.env.local` Anda.
-3.  **Deploy**: Klik tombol **"Deploy"**. Tunggu proses selesai.
-
----
-
-## 🛠️ 3. Manajemen & Pemeliharaan
-
-### 3.1. Troubleshooting: "Invalid API Key"
-Jika Anda melihat error ini setelah deploy, itu berarti Anda lupa menambahkan Environment Variables di Vercel.
-1.  Buka dasbor proyek Anda di Vercel.
-2.  Klik tab **"Settings" > "Environment Variables"**.
-3.  Tambahkan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-4.  Pergi ke tab **"Deployments"**, cari deployment terbaru, klik menu `...` dan pilih **"Redeploy"**.
-
-### 3.2. Memperbarui Aplikasi
-Setiap kali Anda ingin memperbarui aplikasi, cukup lakukan `git push` ke GitHub. Vercel akan otomatis melakukan *redeployment*.
-
-### 3.3. Membersihkan Data Uji Coba
-Buka **SQL Editor** di Supabase dan jalankan perintah:
-```sql
-TRUNCATE TABLE transaksi_pertalite RESTART IDENTITY;
-```
-**Peringatan:** Tindakan ini tidak bisa dibatalkan.
-
----
-
-## ✅ 4. Panduan Pengujian Fungsionalitas
-
--   **[ ] Test 1: Alur Kerja Operator**
-    1.  Buka halaman utama. Masukkan plat nomor dengan format salah (misal: "AZRIEL"), klik "Cek". **Hasil:** Muncul error format tidak valid.
-    2.  Masukkan plat nomor valid, klik "Cek". **Hasil:** Muncul notifikasi "Boleh Mengisi" dan form liter muncul.
-    3.  Masukkan jumlah liter, klik "Simpan". **Hasil:** Muncul notifikasi sukses, form di-reset ke awal.
-    4.  Masukkan plat yang sama lagi, klik "Cek". **Hasil:** Muncul error "Sudah mengisi hari ini".
-
--   **[ ] Test 2: Alur Kerja Admin**
-    1.  Dari halaman utama, klik link "Login Admin".
-    2.  Coba login dengan password salah. **Hasil:** Muncul notifikasi error.
-    3.  Login dengan email dan password yang benar. **Hasil:** Berhasil diarahkan ke halaman Dashboard.
-
--   **[ ] Test 3: Fungsionalitas Dashboard**
-    1.  Pastikan kartu statistik dan grafik menampilkan data.
-    2.  Klik filter "7 Hari Terakhir". **Hasil:** Angka dan grafik berubah sesuai rentang waktu.
-    3.  Pastikan panel "Aktivitas Terkini" menampilkan 5 data terakhir.
-    4.  Klik "Lihat Riwayat". **Hasil:** Berpindah ke halaman riwayat dengan transisi geser.
-
--   **[ ] Test 4: Fungsionalitas Halaman Riwayat**
-    1.  Gunakan filter plat dan tanggal, lalu klik "Bersihkan". **Hasil:** Filter terhapus, data kembali normal.
-    2.  Klik judul kolom untuk sorting. **Hasil:** Data terurut dengan benar.
-    3.  Klik tombol "Ekspor ke CSV". **Hasil:** File `.csv` berisi data yang terfilter berhasil diunduh.
-
--   **[ ] Test 5: Desain Responsif & Transisi**
-    1.  Buka Developer Tools (`F12`) dan aktifkan mode perangkat mobile.
-    2.  Navigasi antar semua halaman. **Hasil:** Transisi geser berjalan mulus tanpa kedip hitam.
-    3.  Periksa halaman riwayat. **Hasil:** Tabel menjadi kartu, paginasi tersusun vertikal.
+- **[ ] Test 3: Fungsionalitas Manajer**
+    1. Buka halaman Dashboard. Ganti filter waktu (Hari Ini, 7 Hari, dll.). **Hasil:** Semua kartu statistik dan grafik berubah sesuai filter.
+    2. Buka halaman Riwayat. Coba semua filter (Plat, Tanggal, Shift, Operator, Jenis). **Hasil:** Data terfilter dengan benar.
+    3. Ekspor data ke CSV. **Hasil:** File terunduh dengan data yang terfilter.
+    4. Buka halaman Laporan. Buat laporan untuk rentang tanggal kustom. **Hasil:** Ringkasan dan detail transaksi ditampilkan dengan benar.
